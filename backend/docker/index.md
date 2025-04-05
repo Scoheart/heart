@@ -6,18 +6,48 @@
 
 在下载 docker 的时候，会发现有很多的组件，这些组件是做什么的？
 
-- docker-ce：docker 社区版
-- docker-ce-cli：docker 命令行工具
-- containerd：容器运行时
-- docker-compose-plugin：docker compose 插件
-- docker-buildx-plugin：docker buildx 插件
+1. docker-ce
+   - Docker CE 是 Docker 的开源版本（社区维护）。
+   - 安装后会有 dockerd 守护进程 Docker Daemon (dockerd)，负责管理容器、镜像、网络、卷等。
+   - 它会启动后台服务 systemctl start docker。
+2. docker-ce-cli
+   - 提供 docker 命令工具（比如 docker run, docker build, docker ps 等）。
+   - 与 docker-ce 配合使用：CLI 发命令给守护进程 dockerd。
+   - 如果只安装 docker-ce 而没有 CLI，你将无法用命令行操作 Docker。
+3. containerd
+   - Docker 默认的容器运行时。
+   - 用来真正创建、运行、暂停、停止容器。
+   - Docker 只是上层控制器，它底层调用的是 containerd。
+   - 现在很多项目（如 Kubernetes）也可以直接使用 containerd 来运行容器，不依赖 dockerd。
+   - 作用类似于：
+     - Docker → 控制平台
+     - containerd → 工人，实际干活
+4. docker-compose-plugin
+   - Docker Compose 的插件。
+   - 它允许你通过命令行管理 Docker Compose 的容器、镜像、网络等。
+5. docker-buildx-plugin
+   - Docker Buildx 的插件。
+   - 它允许你通过命令行管理 Docker Buildx 的容器、镜像、网络等。
 
 ```bash
-# 添加源
-sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo dnf config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+你输入 docker 命令, 如 docker run hello-world（docker-ce-cli）
+        ↓
+Docker 守护进程 dockerd（docker-ce）
+        ↓
+调用 containerd 运行容器（containerd.io）
+```
 
-# 安装docker
+正式安装流程：
+
+```bash
+# 安装dnf-plugins-core，它是dnf的插件，用于管理yum源
+sudo dnf -y install dnf-plugins-core
+
+# 添加yum源
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo # 添加docker的yum源
+sudo dnf config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo # 添加阿里云的yum源
+
+# 安装 docker 的各个组件
 sudo dnf install docker-ce docker-ce-cli containerd.io docker-compose-plugin docker-buildx-plugin
 
 # 设置开机自启动，且同时立刻启动docker
